@@ -31,8 +31,10 @@ class GTK_Main(object):
     
     def __init__(self):
         
+        self.VARIABLE_ESTADO_BATERIA_TEMPORAL = 0
         
         self.UI() # Launch the User Interface
+        self.Algorithm()
         self.Dashplayer() # Launch the Gst Client
         self.readEnviorment() # Readenviorment first time and launch the thread
                               # at the moment an unicv thread scheduling all.
@@ -44,6 +46,10 @@ class GTK_Main(object):
         window.set_title("MPEG-DASH Player")
         window.set_default_size(430 , 250)
         window.connect("destroy", Gtk.main_quit, "WM destroy")
+        window.set_border_width(10)
+        
+        # horizontal separator
+        hseparator_scenario = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         
         vbox = Gtk.VBox()
         window.add(vbox)
@@ -53,10 +59,13 @@ class GTK_Main(object):
         sliders = Gtk.HBox()
         vbox.pack_end(sliders, False, False, 0)
         
-        table = Gtk.Table(6, 4, False)
+        table = Gtk.Table(7, 4, False)
         table.set_col_spacings(25)
         sliders.add(table)
-    
+
+
+        
+        
         #Labels
         #Sliders
         label_top_left = Gtk.Label(label="Buffer Ocupancy" )
@@ -81,28 +90,29 @@ class GTK_Main(object):
 
         # in the grid:
         # attach the first label in the top left corner   (left_attach,right_attach,top_attach,bottom_attach)
-        table.attach(label_top_left,                0, 1, 0, 1)
-        table.attach(label_top_right,               1, 2, 0, 1)
-        table.attach(label_bottom_left,             0, 1, 3, 4)
-        table.attach(label_bottom_right,            1, 2, 3, 4)
+        table.attach(hseparator_scenario, 0,4,0,1)
+        table.attach(label_top_left,                0, 1, 1, 2)
+        table.attach(label_top_right,               1, 2, 1, 2)
+        table.attach(label_bottom_left,             0, 1, 4, 5)
+        table.attach(label_bottom_right,            1, 2, 4, 5)
         
-        table.attach(self.label_Simulation,         2, 3, 0, 1)        
-        table.attach(self.label_Buffer_Sim,         2, 3, 1, 2)
-        table.attach(self.label_Battery_Sim,        2, 3, 2, 3)
-        table.attach(self.label_Battery_state_Sim,  2, 3, 3, 4)
-        table.attach(self.label_CPU_Sim,            2, 3, 4, 5)
-        table.attach(self.label_BW_Sim,             2, 3, 5, 6)
+        table.attach(self.label_Simulation,         2, 3, 1, 2)        
+        table.attach(self.label_Buffer_Sim,         2, 3, 2, 3)
+        table.attach(self.label_Battery_Sim,        2, 3, 3, 4)
+        table.attach(self.label_Battery_state_Sim,  2, 3, 4, 5)
+        table.attach(self.label_CPU_Sim,            2, 3, 5, 6)
+        table.attach(self.label_BW_Sim,             2, 3, 6, 7)
         
-        table.attach(self.label_Real,               3, 4, 0, 1)        
-        table.attach(self.label_Buffer_Real,        3, 4, 1, 2)
-        table.attach(self.label_Battery_Real,       3, 4, 2, 3)
-        table.attach(self.label_CPU_Real,           3, 4, 4, 5)
-        table.attach(self.label_BW_Real,            3, 4, 5, 6)
+        table.attach(self.label_Real,               3, 4, 1, 2)        
+        table.attach(self.label_Buffer_Real,        3, 4, 2, 3)
+        table.attach(self.label_Battery_Real,       3, 4, 3, 4)
+        table.attach(self.label_CPU_Real,           3, 4, 5, 6)
+        table.attach(self.label_BW_Real,            3, 4, 6, 7)
         
         #Togle button Power supply
         PowerSupplyButton = Gtk.CheckButton(" Power Supply ")
         PowerSupplyButton.connect("toggled", self.on_button_power_supply, "1")
-        table.attach (PowerSupplyButton, 1, 2, 1, 2)
+        table.attach (PowerSupplyButton, 1, 2, 2, 3)
 
         #Slider 1 Buffer
         self.Buffer_Sim = Gtk.HScale()
@@ -111,7 +121,7 @@ class GTK_Main(object):
         self.Buffer_Sim.set_digits(0)
         self.Buffer_Sim.set_size_request(50, 35)
         self.Buffer_Sim.connect("value-changed", self.BufferChange)
-        table.attach(self.Buffer_Sim, 0, 1, 2, 3)
+        table.attach(self.Buffer_Sim, 0, 1, 3, 4)
    
         #Slider 2
         self.CPU_Sim = Gtk.HScale()
@@ -120,7 +130,7 @@ class GTK_Main(object):
         self.CPU_Sim.set_digits(0)
         self.CPU_Sim.set_size_request(50, 35)
         self.CPU_Sim.connect("value-changed", self.CPUChange)
-        table.attach(self.CPU_Sim, 0, 1, 4, 5)
+        table.attach(self.CPU_Sim, 0, 1, 5, 6)
          
         #Slider 3
         self.BW_Sim = Gtk.HScale()
@@ -129,7 +139,7 @@ class GTK_Main(object):
         self.BW_Sim.set_digits(0)
         self.BW_Sim.set_size_request(50, 35)
         self.BW_Sim.connect("value-changed", self.BWChange)
-        table.attach(self.BW_Sim, 1, 2,4,5)
+        table.attach(self.BW_Sim, 1, 2,5,6)
          
         #Slider 4
         self.Battery_Sim = Gtk.HScale()
@@ -138,11 +148,10 @@ class GTK_Main(object):
         self.Battery_Sim.set_digits(0)
         self.Battery_Sim.set_size_request(50, 35)
         self.Battery_Sim.connect("value-changed", self.BatteryChange)
-        table.attach(self.Battery_Sim, 1, 2, 2, 3)
+        table.attach(self.Battery_Sim, 1, 2, 3, 4)
         
         self.entry = Gtk.Entry()#Cuadro de texto
         hbox.add(self.entry)
-
         self.button_open = Gtk.Button("Open")
         hbox.pack_start(self.button_open, False, False, 0)
         self.button_open.connect("clicked", self.open_mpd)
@@ -188,6 +197,7 @@ class GTK_Main(object):
         self.audioconv = Gst.ElementFactory.make("faad", "audio_converter")
         self.audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
         
+        self.textoverlay = Gst.ElementFactory.make("textoverlay", "text")
  
         self.player.add(self.source)
         self.player.add(self.dashdemuxer)
@@ -202,14 +212,19 @@ class GTK_Main(object):
         self.player.add(self.audioqueue)
         self.player.add(self.videoconvert)
         
+        self.player.add(self.textoverlay)
+        
         self.source.link(self.dashdemuxer)
         self.dashdemuxer.link(self.videodemuxer)
         self.dashdemuxer.link(self.audiodemuxer)
         
         
         self.videoqueue.link(self.videodecoder)
+        
+        #self.videodecoder.link(self.videoconvert)
         self.videodecoder.link(self.videoconvert)
-        self.videoconvert.link(self.videosink)
+        self.videoconvert.link(self.textoverlay)
+        self.textoverlay.link(self.videosink)
         
         self.audioqueue.link(self.audiodecoder)
         self.audiodecoder.link(self.audioconv)
@@ -324,8 +339,6 @@ class GTK_Main(object):
                 pad.link(qa_pad)
                 print ('link audio')
 
-
-
     '''
     UI
     '''
@@ -338,29 +351,43 @@ class GTK_Main(object):
             self.label_Battery_Real.set_text("Battery is " + str(Battery[0]) + "%")
             self.dashdemuxer.set_property("system-battery-charge", int(str(Battery[0])))
         else:
-            print ("Simulation Batt State") 
+            #print ("Simulation Batt State") 
             if button.get_active():
                 state = "on"
                 print("Button", name, "was turned", state)
-                self.dashdemuxer.set_property("system-battery-state", 2)
-                self.label_Battery_state_Sim.set_text("Power supply")
+                self.dashdemuxer.set_property("system-battery-state", 1)
+                #self.label_Battery_state_Sim.set_text("Power supply")
+                self.label_Battery_state_Sim.set_text("Battery state " + str(self.dashdemuxer.get_property("system-battery-state")))
                 print ("Demux Battery state %s ") % self.dashdemuxer.get_property("system-battery-state")
+                self.VARIABLE_ESTADO_BATERIA_TEMPORAL = 1
+                #Text Overlay
+                self.textoverlay.set_property("halignment", 0)
+                self.textoverlay.set_property("valignment", 2)
+                self.textoverlay.set_property("auto-resize", False)
+                self.textoverlay.set_property("text", "prueeeeeeba")
+                
             else:
                 state = "off"
                 print("Button", name, "was turned", state)
                 self.dashdemuxer.set_property("system-battery-state", 0)
-                self.label_Battery_state_Sim.set_text("Battery supply")
+                #self.label_Battery_state_Sim.set_text("Battery supply")
+                self.label_Battery_state_Sim.set_text("Battery state " + str(self.dashdemuxer.get_property("system-battery-state")))
                 print ("Demux Battery state %s ") % self.dashdemuxer.get_property("system-battery-state")
-    
+                self.VARIABLE_ESTADO_BATERIA_TEMPORAL = 0
+                self.textoverlay.set_property("halignment", 0)
+                self.textoverlay.set_property("valignment", 2)
+                self.textoverlay.set_property("auto-resize", False)
+                self.textoverlay.set_property("text", "")
     def BatteryChange(self, event):
         if SELECTOR:
             print ("Enviorment Batt Level")
             Battery = []
             Battery = self.enviormentBattery()
-            self.label_Battery_Real.set_text("Battery is " + str(Battery[0]) + "%")
-            self.dashdemuxer.set_property("system-battery-charge", int(str(Battery[0])))
+            self.label_Battery_Real.set_text("Battery is " + str(Battery[1]) + "%")
+            
+            self.dashdemuxer.set_property("system-battery-charge", int(str(Battery[1])))
         else:
-            print ("Simulation Batt Level")
+            #print ("Simulation Batt Level")
             #self.label_Battery_Sim.set_text("Battery is " + str(int(self.Battery_Sim.get_value())) + "%")
             self.label_Battery_Sim.set_text("Battery is " + str(int(self.dashdemuxer.get_property("system-battery-charge"))) + "%")
             self.dashdemuxer.set_property("system-battery-charge", int(self.Battery_Sim.get_value()))
@@ -368,25 +395,26 @@ class GTK_Main(object):
         if SELECTOR:
             print ("Enviorment Buffer (not implemented yet)")
         else:
-            print ("Simulation")
-        '''
-        0         Threshhold     100
-        |------------|-----------|
-            Danger        Optimal
-         '''
-        self.label_Buffer_Sim.set_text("Buffer is " + str(int(self.Buffer_Sim.get_value())) + "%")
-        if int(self.Buffer_Sim.get_value()) <= BUFFERTHRESHOLD :
-            self.dashdemuxer.set_property("system-low-buffer", 1)
-        else :
-            self.dashdemuxer.set_property("system-low-buffer", 0)
-            
+            #print ("Simulation Buffer")
+        
+            '''
+            0         Threshhold     100
+            |------------|-----------|
+                Danger        Optimal
+             '''
+            self.label_Buffer_Sim.set_text("Buffer is " + str(int(self.Buffer_Sim.get_value())) + "%")
+            if int(self.Buffer_Sim.get_value()) <= BUFFERTHRESHOLD :
+                self.dashdemuxer.set_property("system-low-buffer", 1)
+            else :
+                self.dashdemuxer.set_property("system-low-buffer", 0)
+                
     def CPUChange(self, event):
         if SELECTOR:
             print ("Enviorment CPU Load ")
         else:
-            print ("Simulation CPU Load")
-        self.label_CPU_Sim.set_text("CPU is " + str(int(self.CPU_Sim.get_value())) + "%" )
-        self.dashdemuxer.set_property("system-cpu", int(self.CPU_Sim.get_value()))   
+            #print ("Simulation CPU Load")
+            self.label_CPU_Sim.set_text("CPU is " + str(int(self.CPU_Sim.get_value())) + "%" )
+            self.dashdemuxer.set_property("system-cpu", int(self.CPU_Sim.get_value()))   
 
     def BWChange(self, event):
         
@@ -464,6 +492,66 @@ class GTK_Main(object):
             REPRESENTATIONATTRIB = REPRESENTATION[index].attrib
             BANDWITH.append(REPRESENTATIONATTRIB['bandwidth'])
         print BANDWITH
+        
+    def Algorithm (self):
+        
+        threading.Timer(2.0, self.Algorithm).start()
+        print ("--- Algoritmo ---")
+        #Fixed variables
+        MAX_CPU     = 85
+        MIN_BATT_LOAD   = 15
+        VERY_LOW_BATT_LOAD = 5
+        MIN_BUFFER      = 50
+        
+        #Enviorment (at the momenr only simulated conditions)
+        SYSTEMCPU   = int(self.CPU_Sim.get_value())
+        SYSTEM_BATTERY_STATE = self.VARIABLE_ESTADO_BATERIA_TEMPORAL
+        SYSTEM_BATTERY_CHARGE = int(self.Battery_Sim.get_value())
+        SYSTEM_BUFFER = int(self.Buffer_Sim.get_value())
+        
+        
+        if SYSTEMCPU > MAX_CPU :
+            print ("System CPU overload")
+            #Calidad minima
+        
+        elif SYSTEMCPU <= MAX_CPU :
+            print ("System CPU normal")
+            #Uso normal del algoritmo
+            
+            #Check Battery
+            if SYSTEM_BATTERY_STATE == 0: #Uso de la Bateria
+                print ("uso bateria")
+                if SYSTEM_BATTERY_CHARGE <= MIN_BATT_LOAD:
+                    #usar textoverlay
+                    print ("Bateria baja textoerlay")
+                    if SYSTEM_BATTERY_CHARGE <= VERY_LOW_BATT_LOAD:
+                        print ("calidad minima y textoverlay")
+                    elif SYSTEM_BATTERY_CHARGE > VERY_LOW_BATT_LOAD:
+                        #Rutina Buffer
+                        if SYSTEM_BUFFER <= MIN_BUFFER :
+                            print ("Buffer bajo")
+                            #bajo una calidad
+                        elif SYSTEM_BUFFER > MIN_BUFFER:
+                            print ("Buffer OK")
+                            #selecciono la mejor calidad seun el BW
+                elif SYSTEM_BATTERY_CHARGE > MIN_BATT_LOAD:
+                    print ("Bateria normal")
+                                #Rutina Buffer
+                    if SYSTEM_BUFFER <= MIN_BUFFER :
+                        print ("Buffer bajo")
+                        #bajo una calidad
+                    elif SYSTEM_BUFFER > MIN_BUFFER:
+                        print ("Buffer OK")
+                        #selecciono la mejor calidad seun el BW
+            elif SYSTEM_BATTERY_STATE == 1: #Uso del cargador
+                print ("uso cargador")
+                #Rutina Buffer
+                if SYSTEM_BUFFER <= MIN_BUFFER :
+                    print ("Buffer bajo")
+                    #bajo una calidad
+                elif SYSTEM_BUFFER > MIN_BUFFER:
+                    print ("Buffer OK")
+                    #selecciono la mejor calidad seun el BW    
 
 if __name__ == "__main__":
     GObject.threads_init()

@@ -7,7 +7,8 @@ import os
 import gi
 import psutil
 import threading
-
+from xml.etree import ElementTree
+from urllib import urlopen 
 #http://www.bok.net/dash/tears_of_steel/cleartext/stream.mpd
 #http://localhost/dash/trik_audio_video/stream.mpd
 
@@ -18,7 +19,7 @@ Gst.init(None)
 
 #--- Select Enviorment (True)/Simulation (False)
 SELECTOR = False
-
+URLPRUEBAS = 'http://localhost/dash/multirate_3/stream.mpd'
 
 # -- Varibles---
 
@@ -29,6 +30,7 @@ BUFFERTHRESHOLD = 50 # en %
 class GTK_Main(object):
     
     def __init__(self):
+        
         
         self.UI() # Launch the User Interface
         self.Dashplayer() # Launch the Gst Client
@@ -138,8 +140,9 @@ class GTK_Main(object):
         self.Battery_Sim.connect("value-changed", self.BatteryChange)
         table.attach(self.Battery_Sim, 1, 2, 2, 3)
         
-        self.entry = Gtk.Entry()
+        self.entry = Gtk.Entry()#Cuadro de texto
         hbox.add(self.entry)
+
         self.button_open = Gtk.Button("Open")
         hbox.pack_start(self.button_open, False, False, 0)
         self.button_open.connect("clicked", self.open_mpd)
@@ -242,11 +245,13 @@ class GTK_Main(object):
                 self.player.set_state(Gst.State.PLAYING)
         #check button value 
         if self.button_open.get_label() == "Open":
-            filepath = 'http://localhost/dash/multirate_3/stream.mpd'
-            if filepath.startswith("http://"):
+            self.filepath = URLPRUEBAS
+            #filepath = self.entry.get_text()
+            if self.filepath.startswith("http://"):
                 print ('Url OK')
                 self.button_open.set_label("Play")
-                self.player.get_by_name("http-src").set_property("location", filepath)
+                self.player.get_by_name("http-src").set_property("location", self.filepath)
+                self.loadTemplateTile() #Obtain MPD parameters
                 self.player.set_state(Gst.State.PLAYING)
             else:
                 print ('Input a valid url')
@@ -436,6 +441,29 @@ class GTK_Main(object):
         self.label_CPU_Real.set_text("CPU is " + str(cpuLoad) + "%")
         self.dashdemuxer.set_property("system-cpu", 0)
 
+    def loadTemplateTile(self):
+        ADAPTATIONSET = []
+        BANDWITH = []
+        #Load Xml
+        manifestXmlTree = ElementTree.parse(urlopen(self.filepath))
+        root = manifestXmlTree.getroot()
+        tag = root.tag
+        xmlns = tag.replace("MPD", "")
+        PERIOD = root[0]
+        
+        for index in range (0,(len(PERIOD)),1):
+
+            ADAPTATIONSET.append(PERIOD[index])
+            ADAPTATIONSETATTRIB =(ADAPTATIONSET[index].attrib)
+            if ADAPTATIONSETATTRIB["mimeType"] == "video/mp4":
+                ADAPTATIONSET_VIDEO = ADAPTATIONSET[index]
+                
+        REPRESENTATION = (ADAPTATIONSET_VIDEO.findall( xmlns +"Representation"))
+        
+        for index in range (0,len(REPRESENTATION),1):
+            REPRESENTATIONATTRIB = REPRESENTATION[index].attrib
+            BANDWITH.append(REPRESENTATIONATTRIB['bandwidth'])
+        print BANDWITH
 
 if __name__ == "__main__":
     GObject.threads_init()

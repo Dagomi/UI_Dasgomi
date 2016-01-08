@@ -43,7 +43,7 @@ class GTK_Main(object):
         #UI
         window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         window.set_title("MPEG-DASH Player")
-        window.set_default_size(430 , 250)
+        window.set_default_size(800 , 600)
         window.connect("destroy", Gtk.main_quit, "WM destroy")
         window.set_border_width(10)
         
@@ -54,10 +54,10 @@ class GTK_Main(object):
         vbox = Gtk.VBox()
         window.add(vbox)
         hbox = Gtk.HBox()
-        vbox.pack_start(hbox, False, False, 0)
+        vbox.pack_start(hbox, False, False, 5)
         
         sliders = Gtk.HBox()
-        vbox.pack_end(sliders, False, False, 0)
+        vbox.pack_end(sliders, False, False, 10)
         
         table = Gtk.Table(7, 8, False)
         table.set_col_spacings(25)
@@ -154,15 +154,26 @@ class GTK_Main(object):
         table.attach(self.Battery_Sim, 1, 2, 3, 4)
         self.Battery_Sim.connect("value-changed", self.BatteryChange)
         
+        #Entry
         self.inputMpdUrl = Gtk.Entry()
         hbox.add(self.inputMpdUrl)
         self.button_open = Gtk.Button("Open")
         hbox.pack_start(self.button_open, False, False, 0)
         self.button_open.connect("clicked", self.open_mpd)
         
+        #Buttons
         self.button_pause = Gtk.Button("Pause")
         hbox.pack_start(self.button_pause, False, False, 0)
         self.button_pause.connect("clicked", self.play_pause)
+        
+        self.icon = Gtk.Button()
+        hbox.pack_start(self.icon, False, False, 0)
+        image = Gtk.Image()
+        image.set_from_file("icon2.png")
+        image.show()
+        self.icon.add(image)
+        self.icon.connect("clicked", self.on_info_clicked)
+        
         
         self.movie_window = Gtk.DrawingArea()
         vbox.add(self.movie_window)
@@ -397,6 +408,17 @@ class GTK_Main(object):
     def BWChange(self, event):    
         self.label_BW_Sim.set_text(("BW is %0.3f Mb/s") % (int(self.BW_Sim.get_value())*0.0009765625))  
     
+    def on_info_clicked(self, widget):
+        
+        dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO,
+            Gtk.ButtonsType.OK, "This is an INFO MessageDialog")
+        dialog.format_secondary_text(
+            "And this is the secondary text that explains things.")
+        dialog.run()
+        print("INFO dialog closed")
+
+        dialog.destroy()
+        
     def environmentBattery (self):
         BATT_NOW     =   "/sys/class/power_supply/BAT0/charge_now"
         BATT_FULL    =  "/sys/class/power_supply/BAT0/charge_full"
@@ -485,7 +507,7 @@ class GTK_Main(object):
         SYSTEM_BATTERY_STATE = self.VARIABLE_ESTADO_BATERIA_TEMPORAL
         SYSTEM_BATTERY_CHARGE = int(self.Battery_Sim.get_value())
         SYSTEM_BUFFER = int(self.Buffer_Sim.get_value())
-        
+        print (int(self.BW_Sim.get_value())*1024)
         
         if SYSTEMCPU > MAX_CPU :
             print ("System CPU overload")
@@ -540,15 +562,18 @@ class GTK_Main(object):
     def nextSegmentQuality(self):
         if self.PLAY == 1:
             #Select the best Quality in therms of BW
+            BW = (int(self.BW_Sim.get_value())*1024)
             for i in range (0,len(self.BANDWITH_MPD),1):
-                if int(self.BW_Sim.get_value()) >= int(self.BANDWITH_MPD[i]):
+                if BW >= int(self.BANDWITH_MPD[i]):
                     action = "subo"
                     self.indice = i
+                    print self.indice
                     SelectRepresentation =  int(self.BANDWITH_MPD[i])
-                elif  int(self.BW_Sim.get_value()) < int(self.BANDWITH_MPD[0]):
+                elif  BW < int(self.BANDWITH_MPD[0]):
                     action = "bajo"
                     SelectRepresentation =  int(self.BANDWITH_MPD[0])
                     self.indice = 0
+                    print self.indice
             print (" %s de calidad") % action
             print SelectRepresentation
         
